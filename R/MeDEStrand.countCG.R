@@ -33,7 +33,7 @@ MeDEStrand.countCG <- function(pattern="CG", refObj=NULL){
 
 	## Get the genomic positions of the sequence pattern
 	cat("Get genomic sequence pattern positions...\n")
-	GRanges.pattern = MEDIPS.getPositions(BSgenome, pattern, chromosomes)
+	GRanges.pattern = getPositions(BSgenome, pattern, chromosomes)
 
 	## Create the genome vector Granges object
 	if(class(refObj)=="MEDIPSset"){
@@ -53,4 +53,39 @@ MeDEStrand.countCG <- function(pattern="CG", refObj=NULL){
 	gc()
 
 	return(COUPLINGsetObj)
+}
+
+getPositions <- function (BSgenome = NULL, pattern = NULL, chromosomes = NULL)
+{
+    if (is.null(pattern)) {
+        stop("Must specify a sequence pattern!")
+    }
+    currentchr = NULL
+    currentstart = NULL
+    #organism = ls(paste("package:", BSgenome, sep = ""))
+    genomedata = getBSgenome(BSgenome)
+    for (chromosome in chromosomes) {
+        cat(paste("Searching in", chromosome, "..."))
+        {
+            subject <- genomedata[[chromosome]]
+        }
+        plus_matches <- matchPattern(pattern, subject)
+        start = start(plus_matches)
+        currentchr = c(currentchr, rep(chromosome, length(start)))
+        currentstart = c(currentstart, start)
+        pattern <- DNAString(pattern)
+        rcpattern <- reverseComplement(pattern)
+        if (pattern != rcpattern) {
+            minus_matches <- matchPattern(rcpattern, subject)
+            start = start(minus_matches)
+            currentchr = c(currentchr, rep(chromosome, length(start)))
+            currentstart = c(currentstart, start)
+        }
+        cat(paste("[", length(start), "] found.\n"))
+    }
+    cat(paste("Number of identified ", pattern, " pattern: ",
+        length(currentchr), "\n"))
+    gc()
+    return(GRanges(seqnames = currentchr, ranges = IRanges(start = currentstart,
+        end = currentstart)))
 }

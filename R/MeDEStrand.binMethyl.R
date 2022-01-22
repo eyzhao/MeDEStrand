@@ -14,7 +14,11 @@
 #'@examples Bin_methylation = MeDEStrand.binMethyl(MSet = MeDIPSset, CSet = CS )
 ## Modified:	July 2017
 
-MeDEStrand.binMethyl <- function(MSetInput=NULL, CSet=NULL, ccObj=NULL, Granges = FALSE){
+MeDEStrand.binMethyl <- function(MSetInput=NULL, CSet=NULL, ccObj=NULL, Granges = FALSE, BSgenome=NULL){
+
+  if (is.null(BSgenome)) {
+    stop("No BSgenome provided")
+  }
 
   for ( i in 1:2 ) {
 
@@ -110,7 +114,7 @@ MeDEStrand.binMethyl <- function(MSetInput=NULL, CSet=NULL, ccObj=NULL, Granges 
 
      chr.select = MSet@chr_names
      window_size = window_size(MSet)
-     chr_lengths=unname( seqlengths(BSgenome.Hsapiens.UCSC.hg19)[ seqnames(BSgenome.Hsapiens.UCSC.hg19@seqinfo)%in%chr.select ] )
+     chr_lengths=unname( seqlengths(BSgenome)[ seqnames(BSgenome@seqinfo)%in%chr.select ] )
      no_chr_windows = ceiling(chr_lengths/window_size)
      supersize_chr = cumsum(no_chr_windows)
      chromosomes=chr.select
